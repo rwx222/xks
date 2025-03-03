@@ -1,5 +1,5 @@
 use std::fs;
-use std::path::PathBuf;
+use std::path::Path;
 
 #[derive(Debug)]
 pub struct GitConfigData {
@@ -7,7 +7,7 @@ pub struct GitConfigData {
     pub email: String,
 }
 
-pub fn get_gitconfig_data(path: &PathBuf) -> GitConfigData {
+pub fn get_gitconfig_data<T: AsRef<Path>>(path: T) -> GitConfigData {
     let mut name = String::new();
     let mut email = String::new();
 

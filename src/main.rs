@@ -1,26 +1,45 @@
 use std::env;
-use std::path::Path;
+use std::process;
 
-mod config;
+mod cli;
+mod constants;
 mod git;
+mod utils;
 
 fn main() {
-    const DATA_DIR_NAME: &str = ".xks";
-    const GITCONFIG_FILE: &str = ".gitconfig";
-
     let args: Vec<String> = env::args().collect();
 
-    let home_path: String = env::var("HOME").unwrap_or_else(|_| String::from("/tmp"));
+    let first_arg = args.get(1).map(|s| s.as_str()).unwrap_or_else(|| "_");
+    let second_arg = args.get(2).map(|s| s.as_str()).unwrap_or_else(|| "");
 
-    let data_path = Path::new(&home_path).join(DATA_DIR_NAME);
-    let gitconfig_path = Path::new(&home_path).join(GITCONFIG_FILE);
-
-    let profile_dirs = config::get_profile_dirs(&data_path);
-    let gitconfig_data = git::get_gitconfig_data(&gitconfig_path);
-
-    println!("{:?}", args);
-    println!("{:?}", profile_dirs);
-    println!("{:?}", data_path);
-    println!("{:?}", gitconfig_data.name);
-    println!("{:?}", gitconfig_data.email);
+    match first_arg {
+        "version" | "--version" => {
+            cli::version();
+        }
+        "save" => {
+            if let Err(e) = cli::save(second_arg) {
+                eprintln!("{}", e);
+                process::exit(1);
+            } else {
+                if let Err(e) = cli::list() {
+                    eprintln!("{}", e);
+                    process::exit(1);
+                }
+            }
+        }
+        "_" => {
+            // no command
+            if let Err(e) = cli::list() {
+                eprintln!("{}", e);
+                process::exit(1);
+            }
+        }
+        _ => {
+            // wrong command
+            if let Err(e) = cli::list() {
+                eprintln!("{}", e);
+                process::exit(1);
+            }
+        }
+    }
 }
