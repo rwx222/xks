@@ -5,13 +5,17 @@ use std::path::Path;
 pub struct GitConfigData {
     pub name: String,
     pub email: String,
+    pub file_exists: bool,
 }
 
 pub fn get_gitconfig_data<T: AsRef<Path>>(path: T) -> GitConfigData {
     let mut name = String::new();
     let mut email = String::new();
+    let mut file_exists: bool = false;
 
     if let Ok(content) = fs::read_to_string(&path) {
+        file_exists = true;
+
         let mut in_user_section = false;
 
         for line in content.lines() {
@@ -33,5 +37,9 @@ pub fn get_gitconfig_data<T: AsRef<Path>>(path: T) -> GitConfigData {
         }
     }
 
-    GitConfigData { name, email }
+    GitConfigData {
+        name,
+        email,
+        file_exists,
+    }
 }

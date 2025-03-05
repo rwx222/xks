@@ -12,6 +12,12 @@ fn main() {
     let first_arg = args.get(1).map(|s| s.as_str()).unwrap_or_else(|| "_");
     let second_arg = args.get(2).map(|s| s.as_str()).unwrap_or_else(|| "");
 
+    if args.len() > 3 {
+        eprintln!("Expected at most two arguments, but more were provided.");
+        println!("{}", constants::HELP_LINE);
+        process::exit(1);
+    }
+
     match first_arg {
         "version" | "--version" => {
             cli::version();
@@ -20,11 +26,12 @@ fn main() {
             if let Err(e) = cli::save(second_arg) {
                 eprintln!("{}", e);
                 process::exit(1);
-            } else {
-                if let Err(e) = cli::list() {
-                    eprintln!("{}", e);
-                    process::exit(1);
-                }
+            }
+        }
+        "remove" | "delete" => {
+            if let Err(e) = cli::remove(second_arg) {
+                eprintln!("{}", e);
+                process::exit(1);
             }
         }
         "_" => {
@@ -36,10 +43,8 @@ fn main() {
         }
         _ => {
             // wrong command
-            if let Err(e) = cli::list() {
-                eprintln!("{}", e);
-                process::exit(1);
-            }
+            eprintln!("Unrecognized command. Please check the available commands.");
+            println!("{}", constants::HELP_LINE);
         }
     }
 }

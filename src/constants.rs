@@ -18,6 +18,7 @@ pub const SSH_FILES: [&str; 9] = [
 pub const PROFILE_NAME_MAX_LENGTH: usize = 50;
 pub const USAGE_LINE: &str = "Example: xks save alex_github";
 pub const VALID_LINE: &str = "Example: xks save alex_2@wi-fi.org";
+pub const HELP_LINE: &str = "Run:\n  xks help \nTo see usage instructions.";
 
 pub const READING_FILES_ERR: &str =
     "Error: Could not read files. This may be due to insufficient permissions.";
