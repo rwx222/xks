@@ -33,11 +33,11 @@ fn main() {
     }
 
     match first_arg {
-        "version" | "--version" => {
+        "version" | "--version" | "-v" => {
             cli::version();
         }
         "save" => {
-            if let Err(e) = cli::save(second_arg) {
+            if let Err(e) = cli::save(second_arg, yes_flag) {
                 eprintln!("{}", e);
                 process::exit(1);
             }

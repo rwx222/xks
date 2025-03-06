@@ -20,17 +20,20 @@ pub fn list() -> Result<(), String> {
 
     println!("[saved profiles: {}]", profile_dirs.len());
 
-    for profile_name in profile_dirs {
+    for profile_directory in profile_dirs {
         let mut prefix: &str = " ";
-        let profile_prohash =
-            utils::get_profile_hash(&app_paths, gitconfig_data.file_exists, Some(&profile_name))?;
+        let profile_prohash = utils::get_profile_hash(
+            &app_paths,
+            gitconfig_data.file_exists,
+            Some(&profile_directory),
+        )?;
 
         if currfiles_prohash.hash == profile_prohash.hash {
             prefix = "*";
-            current_profile_name = profile_name.clone();
+            current_profile_name = profile_directory.clone();
         }
 
-        println!("{} {}", prefix, profile_name);
+        println!("{} {}", prefix, profile_directory);
     }
     println!("");
 
@@ -60,7 +63,7 @@ pub fn list() -> Result<(), String> {
     Ok(())
 }
 
-pub fn save(profile_name: &str) -> Result<(), String> {
+pub fn save(profile_name: &str, yes_flag: bool) -> Result<(), String> {
     let valid_chars = |c: char| c.is_ascii_alphanumeric() || "@-_.".contains(c);
 
     if profile_name.is_empty() {
@@ -112,42 +115,74 @@ pub fn save(profile_name: &str) -> Result<(), String> {
         return Err("No files found to save for this profile.".to_string());
     }
 
-    if let Err(err) = fs::remove_dir_all(&profile_path) {
-        if err.kind() != ErrorKind::NotFound {
-            eprintln!("{}", REMOVING_DIR_ERR);
-            return Err(err.to_string());
+    let profile_dirs: Vec<String> =
+        utils::get_dirs(&app_paths.data_dir_path).unwrap_or_else(|_| vec![]);
+
+    let mut profile_already_exists_and_has_changes: bool = false;
+
+    for profile_directory in profile_dirs {
+        let profile_prohash = utils::get_profile_hash(
+            &app_paths,
+            gitconfig_data.file_exists,
+            Some(&profile_directory),
+        )?;
+
+        if profile_directory == profile_name && currfiles_prohash.hash != profile_prohash.hash {
+            profile_already_exists_and_has_changes = true;
         }
     }
 
-    if gitconfig_data.file_exists {
-        if let Err(_) = utils::copy_file(
-            &app_paths.gitconfig_file_path,
-            &profile_path.join(GITCONFIG_FILE_NAME),
-        ) {
-            return Err(format!(
-                "Error: Could not copy file: {:?}",
-                GITCONFIG_FILE_NAME
-            ));
-        } else {
-            println!("File copied!: {}", GITCONFIG_FILE_NAME)
-        }
-    }
-
-    for filename in currfiles_prohash.tracked_file_names {
-        if filename != GITCONFIG_FILE_NAME {
-            if let Err(_) = utils::copy_file(
-                &app_paths.ssh_dir_path.join(&filename),
-                &profile_path.join(&filename),
-            ) {
-                return Err(format!("Error: Could not copy file: {:?}", filename));
-            } else {
-                println!("File copied!: {}", filename)
+    let save_profile = || -> Result<(), String> {
+        if let Err(err) = fs::remove_dir_all(&profile_path) {
+            if err.kind() != ErrorKind::NotFound {
+                eprintln!("{}", REMOVING_DIR_ERR);
+                return Err(err.to_string());
             }
         }
+
+        if gitconfig_data.file_exists {
+            if let Err(_) = utils::copy_file(
+                &app_paths.gitconfig_file_path,
+                &profile_path.join(GITCONFIG_FILE_NAME),
+            ) {
+                return Err(format!(
+                    "Error: Could not copy file: {:?}",
+                    GITCONFIG_FILE_NAME
+                ));
+            } else {
+                println!("  {}", GITCONFIG_FILE_NAME)
+            }
+        }
+
+        for filename in currfiles_prohash.tracked_file_names {
+            if filename != GITCONFIG_FILE_NAME {
+                if let Err(_) = utils::copy_file(
+                    &app_paths.ssh_dir_path.join(&filename),
+                    &profile_path.join(&filename),
+                ) {
+                    return Err(format!("Error: Could not copy file: {:?}", filename));
+                } else {
+                    println!("  {}", filename)
+                }
+            }
+        }
+
+        println!("Saved profile {:?} successfully!", profile_name);
+        return Ok(());
+    };
+
+    if profile_already_exists_and_has_changes && !yes_flag {
+        let prompt = "The current files have been modified.\nDo you want to save the changes?";
+
+        if utils::confirm(prompt) {
+            return save_profile();
+        } else {
+            println!("No profile was saved!");
+            return Ok(());
+        }
     }
 
-    println!("Saved profile {:?} successfully!", profile_name);
-    Ok(())
+    save_profile()
 }
 
 pub fn remove(profile_name: &str, yes_flag: bool) -> Result<(), String> {
@@ -209,9 +244,12 @@ pub fn discard_files(yes_flag: bool) -> Result<(), String> {
 
     let mut is_profile_saved: bool = false;
 
-    for profile_name in profile_dirs {
-        let profile_prohash =
-            utils::get_profile_hash(&app_paths, gitconfig_data.file_exists, Some(&profile_name))?;
+    for profile_directory in profile_dirs {
+        let profile_prohash = utils::get_profile_hash(
+            &app_paths,
+            gitconfig_data.file_exists,
+            Some(&profile_directory),
+        )?;
 
         if currfiles_prohash.hash == profile_prohash.hash {
             is_profile_saved = true;
@@ -259,5 +297,5 @@ pub fn discard_files(yes_flag: bool) -> Result<(), String> {
 }
 
 pub fn version() {
-    println!("xks v{}", VERSION);
+    println!("{}", VERSION);
 }

@@ -1,4 +1,4 @@
-pub const VERSION: &str = "0.1.0";
+pub const VERSION: &str = "1.0.0";
 
 pub const DATA_DIR_NAME: &str = ".xks";
 pub const SSH_DIR: &str = ".ssh";
