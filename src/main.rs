@@ -43,7 +43,7 @@ fn main() {
             }
         }
         "remove" => {
-            if let Err(e) = cli::remove(second_arg) {
+            if let Err(e) = cli::remove(second_arg, yes_flag) {
                 eprintln!("{}", e);
                 process::exit(1);
             }

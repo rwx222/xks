@@ -150,7 +150,7 @@ pub fn save(profile_name: &str) -> Result<(), String> {
     Ok(())
 }
 
-pub fn remove(profile_name: &str) -> Result<(), String> {
+pub fn remove(profile_name: &str, yes_flag: bool) -> Result<(), String> {
     if profile_name.is_empty() {
         let lines = [
             "Profile name cannot be empty.",
@@ -160,21 +160,36 @@ pub fn remove(profile_name: &str) -> Result<(), String> {
         return Err(msg);
     }
 
-    let app_paths = utils::get_app_paths();
-    let profile_path = app_paths.data_dir_path.join(profile_name);
+    let remove_profile = || -> Result<(), String> {
+        let app_paths = utils::get_app_paths();
+        let profile_path = app_paths.data_dir_path.join(profile_name);
 
-    if let Err(err) = fs::remove_dir_all(&profile_path) {
-        if err.kind() != ErrorKind::NotFound {
-            eprintln!("{}", REMOVING_DIR_ERR);
-            return Err(err.to_string());
-        } else {
-            println!("Profile not found. Nothing to remove.");
-            return Ok(());
+        if let Err(err) = fs::remove_dir_all(&profile_path) {
+            if err.kind() != ErrorKind::NotFound {
+                eprintln!("{}", REMOVING_DIR_ERR);
+                return Err(err.to_string());
+            } else {
+                println!("Profile not found. Nothing to remove.");
+                return Ok(());
+            }
         }
+
+        println!("Removed profile {:?} successfully!", profile_name);
+        return Ok(());
+    };
+
+    if yes_flag {
+        return remove_profile();
     }
 
-    println!("Removed profile {:?} successfully!", profile_name);
-    Ok(())
+    let prompt = "Are you sure you want to remove this profile?";
+
+    if utils::confirm(prompt) {
+        return remove_profile();
+    } else {
+        println!("No profile was removed!");
+        return Ok(());
+    }
 }
 
 pub fn discard_files(yes_flag: bool) -> Result<(), String> {
@@ -233,14 +248,14 @@ pub fn discard_files(yes_flag: bool) -> Result<(), String> {
         println!("  {}", filename);
     }
 
-    let prompt = "The current files have not been saved, or have been modified.\nAre you sure you want to discard them?";
+    let prompt = "The current files have not been saved, or have been modified.\nThis action will remove them.\nAre you sure you want to discard them?";
+
     if utils::confirm(prompt) {
         return remove_current_files();
     } else {
         println!("No files were discarded!");
+        return Ok(());
     }
-
-    Ok(())
 }
 
 pub fn version() {

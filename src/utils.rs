@@ -76,7 +76,7 @@ pub fn get_profile_hash(
                 .into_iter()
                 .filter(|filename| {
                     TRACKED_FILE_NAMES.contains(&filename.as_str())
-                        && filename.as_str() != GITCONFIG_FILE_NAME
+                        && filename != GITCONFIG_FILE_NAME
                 })
                 .collect();
 
@@ -89,7 +89,7 @@ pub fn get_profile_hash(
             let mut sum_paths: Vec<PathBuf> = vec![];
 
             tracked_file_names.iter().for_each(|filename| {
-                if filename.as_str() == GITCONFIG_FILE_NAME {
+                if filename == GITCONFIG_FILE_NAME {
                     sum_paths.push(app_paths.gitconfig_file_path.clone());
                 } else {
                     sum_paths.push(app_paths.ssh_dir_path.join(filename))
