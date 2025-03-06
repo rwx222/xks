@@ -1,79 +1,46 @@
 use std::fs;
 use std::io::ErrorKind;
-use std::path::PathBuf;
 
 use crate::constants::{
-    GITCONFIG_FILE, PROFILE_NAME_MAX_LENGTH, READING_FILES_ERR, REMOVING_DIR_ERR, SSH_FILES,
-    USAGE_LINE, VALID_LINE, VERSION,
+    GITCONFIG_FILE_NAME, PROFILE_NAME_MAX_LENGTH, REMOVING_DIR_ERR, USAGE_LINE, VALID_LINE, VERSION,
 };
 use crate::git;
 use crate::utils;
 
 pub fn list() -> Result<(), String> {
     let app_paths = utils::get_app_paths();
-    let gitconfig_data = git::get_gitconfig_data(&app_paths.gitconfig_file);
-    let profile_dirs: Vec<String> = utils::get_dirs(&app_paths.data_dir).unwrap_or_else(|_| vec![]);
 
-    let all_ssh_files: Vec<String> =
-        utils::get_files(&app_paths.ssh_dir).unwrap_or_else(|_| vec![]);
-    let mut ssh_files: Vec<String> = all_ssh_files
-        .into_iter()
-        .filter(|filename| SSH_FILES.contains(&filename.as_str()))
-        .collect();
+    let gitconfig_data = git::get_gitconfig_data(&app_paths.gitconfig_file_path);
 
-    if gitconfig_data.file_exists {
-        ssh_files.push(GITCONFIG_FILE.to_string());
-    }
+    let profile_dirs: Vec<String> =
+        utils::get_dirs(&app_paths.data_dir_path).unwrap_or_else(|_| vec![]);
 
-    ssh_files.sort();
+    let currfiles_prohash = utils::get_profile_hash(&app_paths, gitconfig_data.file_exists, None)?;
 
-    let mut current_profile_sum_paths: Vec<PathBuf> = vec![];
-
-    ssh_files.iter().for_each(|filename| {
-        if filename.as_str() == GITCONFIG_FILE {
-            current_profile_sum_paths.push(app_paths.gitconfig_file.clone());
-        } else {
-            current_profile_sum_paths.push(app_paths.ssh_dir.join(&filename));
-        }
-    });
-
-    let current_hash =
-        utils::get_profile_hash(&current_profile_sum_paths).unwrap_or_else(|_| String::from("---"));
     let mut current_profile_name = String::new();
 
     println!("[saved profiles: {}]", profile_dirs.len());
 
-    for profile_dir in profile_dirs {
+    for profile_name in profile_dirs {
         let mut prefix: &str = " ";
-        let profile_path = app_paths.data_dir.join(&profile_dir);
-        let all_profile_files: Vec<String> = utils::get_files(&profile_path)?;
-        let mut filtered_files: Vec<String> = all_profile_files
-            .into_iter()
-            .filter(|filename| {
-                SSH_FILES.contains(&filename.as_str()) || filename.as_str() == GITCONFIG_FILE
-            })
-            .collect();
-        filtered_files.sort();
+        let profile_prohash =
+            utils::get_profile_hash(&app_paths, gitconfig_data.file_exists, Some(&profile_name))?;
 
-        let mut profile_sum_paths: Vec<PathBuf> = vec![];
-
-        filtered_files
-            .into_iter()
-            .for_each(|filename| profile_sum_paths.push(profile_path.join(filename)));
-
-        let profile_hash = utils::get_profile_hash(&profile_sum_paths).expect(READING_FILES_ERR);
-
-        if profile_hash == current_hash {
+        if currfiles_prohash.hash == profile_prohash.hash {
             prefix = "*";
-            current_profile_name = profile_dir.clone();
+            current_profile_name = profile_name.clone();
         }
 
-        println!("{} {}", prefix, profile_dir);
+        println!("{} {}", prefix, profile_name);
     }
     println!("");
 
-    if current_profile_name.is_empty() {
-        println!("--- no profile has been saved for the current files ---");
+    if currfiles_prohash.tracked_file_names.len() == 0 {
+        println!("--- no profile in use ---");
+        println!("--- .gitconfig and SSH keys not found ---");
+    } else if current_profile_name.is_empty() {
+        println!("--- no profile in use ---");
+        println!("--- current files have not been saved, or have been modified ---");
     } else {
         println!("(current = {})", current_profile_name);
     }
@@ -83,8 +50,11 @@ pub fn list() -> Result<(), String> {
         println!("  gitconfig_mail: {:?}", gitconfig_data.email);
     }
 
-    println!("  files ({:?}):", ssh_files.len());
-    for filename in ssh_files {
+    println!(
+        "  files ({:?}):",
+        currfiles_prohash.tracked_file_names.len()
+    );
+    for filename in currfiles_prohash.tracked_file_names {
         println!("    {}", filename);
     }
 
@@ -134,17 +104,12 @@ pub fn save(profile_name: &str) -> Result<(), String> {
     }
 
     let app_paths = utils::get_app_paths();
-    let gitconfig_data = git::get_gitconfig_data(&app_paths.gitconfig_file);
-    let profile_path = app_paths.data_dir.join(profile_name);
+    let gitconfig_data = git::get_gitconfig_data(&app_paths.gitconfig_file_path);
+    let profile_path = app_paths.data_dir_path.join(profile_name);
 
-    let all_ssh_files: Vec<String> =
-        utils::get_files(&app_paths.ssh_dir).unwrap_or_else(|_| vec![]);
-    let ssh_files: Vec<String> = all_ssh_files
-        .into_iter()
-        .filter(|filename| SSH_FILES.contains(&filename.as_str()))
-        .collect();
+    let currfiles_prohash = utils::get_profile_hash(&app_paths, gitconfig_data.file_exists, None)?;
 
-    if !gitconfig_data.file_exists && ssh_files.len() == 0 {
+    if currfiles_prohash.tracked_file_names.len() == 0 {
         return Err("No files found to save for this profile.".to_string());
     }
 
@@ -156,23 +121,28 @@ pub fn save(profile_name: &str) -> Result<(), String> {
 
     if gitconfig_data.file_exists {
         if let Err(_) = utils::copy_file(
-            &app_paths.gitconfig_file,
-            &profile_path.join(GITCONFIG_FILE),
+            &app_paths.gitconfig_file_path,
+            &profile_path.join(GITCONFIG_FILE_NAME),
         ) {
-            return Err(format!("Error: Could not copy file: {:?}", GITCONFIG_FILE));
+            return Err(format!(
+                "Error: Could not copy file: {:?}",
+                GITCONFIG_FILE_NAME
+            ));
         } else {
-            println!("File copied!: {}", GITCONFIG_FILE)
+            println!("File copied!: {}", GITCONFIG_FILE_NAME)
         }
     }
 
-    for ssh_file in &ssh_files {
-        if let Err(_) = utils::copy_file(
-            &app_paths.ssh_dir.join(ssh_file),
-            &profile_path.join(ssh_file),
-        ) {
-            return Err(format!("Error: Could not copy file: {:?}", ssh_file));
-        } else {
-            println!("File copied!: {}", ssh_file)
+    for filename in currfiles_prohash.tracked_file_names {
+        if filename != GITCONFIG_FILE_NAME {
+            if let Err(_) = utils::copy_file(
+                &app_paths.ssh_dir_path.join(&filename),
+                &profile_path.join(&filename),
+            ) {
+                return Err(format!("Error: Could not copy file: {:?}", filename));
+            } else {
+                println!("File copied!: {}", filename)
+            }
         }
     }
 
@@ -191,7 +161,7 @@ pub fn remove(profile_name: &str) -> Result<(), String> {
     }
 
     let app_paths = utils::get_app_paths();
-    let profile_path = app_paths.data_dir.join(profile_name);
+    let profile_path = app_paths.data_dir_path.join(profile_name);
 
     if let Err(err) = fs::remove_dir_all(&profile_path) {
         if err.kind() != ErrorKind::NotFound {
