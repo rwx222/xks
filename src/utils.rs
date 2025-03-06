@@ -1,7 +1,7 @@
 use sha2::{Digest, Sha256};
 use std::env;
 use std::fs;
-use std::io::{self, Read};
+use std::io::{self, Read, Write};
 use std::path::{Path, PathBuf};
 
 use crate::constants::{
@@ -166,4 +166,16 @@ pub fn copy_file(from_path: &PathBuf, to_path: &PathBuf) -> io::Result<()> {
     fs::copy(from_path, to_path)?;
 
     Ok(())
+}
+
+pub fn confirm(prompt: &str) -> bool {
+    print!("{} [yes/no] (y/n): ", prompt);
+    io::stdout().flush().expect("Error: Writing stdout.");
+
+    let mut input = String::new();
+    io::stdin()
+        .read_line(&mut input)
+        .expect("Error: Reading input.");
+
+    matches!(input.trim().to_lowercase().as_str(), "yes" | "y")
 }

@@ -9,7 +9,6 @@ use crate::utils;
 
 pub fn list() -> Result<(), String> {
     let app_paths = utils::get_app_paths();
-
     let gitconfig_data = git::get_gitconfig_data(&app_paths.gitconfig_file_path);
 
     let profile_dirs: Vec<String> =
@@ -115,7 +114,8 @@ pub fn save(profile_name: &str) -> Result<(), String> {
 
     if let Err(err) = fs::remove_dir_all(&profile_path) {
         if err.kind() != ErrorKind::NotFound {
-            return Err(REMOVING_DIR_ERR.to_string());
+            eprintln!("{}", REMOVING_DIR_ERR);
+            return Err(err.to_string());
         }
     }
 
@@ -165,7 +165,8 @@ pub fn remove(profile_name: &str) -> Result<(), String> {
 
     if let Err(err) = fs::remove_dir_all(&profile_path) {
         if err.kind() != ErrorKind::NotFound {
-            return Err(REMOVING_DIR_ERR.to_string());
+            eprintln!("{}", REMOVING_DIR_ERR);
+            return Err(err.to_string());
         } else {
             println!("Profile not found. Nothing to remove.");
             return Ok(());
@@ -173,6 +174,72 @@ pub fn remove(profile_name: &str) -> Result<(), String> {
     }
 
     println!("Removed profile {:?} successfully!", profile_name);
+    Ok(())
+}
+
+pub fn discard_files(yes_flag: bool) -> Result<(), String> {
+    let app_paths = utils::get_app_paths();
+    let gitconfig_data = git::get_gitconfig_data(&app_paths.gitconfig_file_path);
+
+    let profile_dirs: Vec<String> =
+        utils::get_dirs(&app_paths.data_dir_path).unwrap_or_else(|_| vec![]);
+
+    let currfiles_prohash = utils::get_profile_hash(&app_paths, gitconfig_data.file_exists, None)?;
+
+    if currfiles_prohash.tracked_file_names.len() == 0 {
+        println!(".gitconfig and SSH keys not found.");
+        println!("No files were discarded!");
+        return Ok(());
+    }
+
+    let mut is_profile_saved: bool = false;
+
+    for profile_name in profile_dirs {
+        let profile_prohash =
+            utils::get_profile_hash(&app_paths, gitconfig_data.file_exists, Some(&profile_name))?;
+
+        if currfiles_prohash.hash == profile_prohash.hash {
+            is_profile_saved = true;
+        }
+    }
+
+    let remove_current_files = || -> Result<(), String> {
+        for filename in &currfiles_prohash.tracked_file_names {
+            let file_to_remove_path = if filename == GITCONFIG_FILE_NAME {
+                app_paths.gitconfig_file_path.clone()
+            } else {
+                app_paths.ssh_dir_path.join(filename)
+            };
+
+            if let Err(err) = fs::remove_file(file_to_remove_path) {
+                eprintln!("Error: Could not remove file: {:?}", filename);
+                return Err(err.to_string());
+            }
+        }
+
+        println!("Current files discarded successfully!");
+        return Ok(());
+    };
+
+    if is_profile_saved || yes_flag {
+        return remove_current_files();
+    }
+
+    println!(
+        "Current files ({:?}):",
+        currfiles_prohash.tracked_file_names.len()
+    );
+    for filename in &currfiles_prohash.tracked_file_names {
+        println!("  {}", filename);
+    }
+
+    let prompt = "The current files have not been saved, or have been modified.\nAre you sure you want to discard them?";
+    if utils::confirm(prompt) {
+        return remove_current_files();
+    } else {
+        println!("No files were discarded!");
+    }
+
     Ok(())
 }
 

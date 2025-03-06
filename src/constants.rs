@@ -17,6 +17,8 @@ pub const TRACKED_FILE_NAMES: [&str; 10] = [
     "id_dsa.pub",
 ];
 
+pub const YES_FLAG: &str = "-y";
+
 pub const PROFILE_NAME_MAX_LENGTH: usize = 50;
 pub const USAGE_LINE: &str = "Example: xks save alex_github";
 pub const VALID_LINE: &str = "Example: xks save alex_2@wi-fi.org";
