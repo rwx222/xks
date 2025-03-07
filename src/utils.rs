@@ -158,12 +158,12 @@ pub fn get_files_hash(file_paths: Vec<PathBuf>) -> io::Result<String> {
     Ok(format!("{:x}", hasher.finalize()))
 }
 
-pub fn copy_file(from_path: &PathBuf, to_path: &PathBuf) -> io::Result<()> {
-    if let Some(parent) = to_path.parent() {
+pub fn copy_file(source_file_path: &PathBuf, destination_file_path: &PathBuf) -> io::Result<()> {
+    if let Some(parent) = destination_file_path.parent() {
         fs::create_dir_all(parent)?;
     }
 
-    fs::copy(from_path, to_path)?;
+    fs::copy(source_file_path, destination_file_path)?;
 
     Ok(())
 }

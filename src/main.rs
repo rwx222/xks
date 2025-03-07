@@ -36,6 +36,10 @@ fn main() {
         "version" | "--version" | "-v" => {
             cli::version();
         }
+        "help" | "--help" | "-h" => {
+            // TODO: help
+            cli::version();
+        }
         "save" => {
             if let Err(e) = cli::save(second_arg, yes_flag) {
                 eprintln!("{}", e);
@@ -44,6 +48,12 @@ fn main() {
         }
         "remove" => {
             if let Err(e) = cli::remove(second_arg, yes_flag) {
+                eprintln!("{}", e);
+                process::exit(1);
+            }
+        }
+        "use" => {
+            if let Err(e) = cli::use_profile(second_arg, yes_flag) {
                 eprintln!("{}", e);
                 process::exit(1);
             }

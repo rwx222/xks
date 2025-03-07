@@ -44,7 +44,7 @@ pub fn list() -> Result<(), String> {
         println!("--- no profile in use ---");
         println!("--- current files have not been saved, or have been modified ---");
     } else {
-        println!("(current = {})", current_profile_name);
+        println!("(current: {})", current_profile_name);
     }
 
     if gitconfig_data.file_exists {
@@ -292,6 +292,105 @@ pub fn discard_files(yes_flag: bool) -> Result<(), String> {
         return remove_current_files();
     } else {
         println!("No files were discarded!");
+        return Ok(());
+    }
+}
+
+pub fn use_profile(new_profile_name: &str, yes_flag: bool) -> Result<(), String> {
+    let app_paths = utils::get_app_paths();
+    let gitconfig_data = git::get_gitconfig_data(&app_paths.gitconfig_file_path);
+
+    let profile_dirs: Vec<String> =
+        utils::get_dirs(&app_paths.data_dir_path).unwrap_or_else(|_| vec![]);
+
+    let currfiles_prohash = utils::get_profile_hash(&app_paths, gitconfig_data.file_exists, None)?;
+
+    let mut current_profile_name = String::new();
+    let mut is_profile_saved: bool = false;
+    let mut profile_name_exists: bool = false;
+
+    for profile_directory in profile_dirs {
+        let profile_prohash = utils::get_profile_hash(
+            &app_paths,
+            gitconfig_data.file_exists,
+            Some(&profile_directory),
+        )?;
+
+        if currfiles_prohash.hash == profile_prohash.hash {
+            is_profile_saved = true;
+            current_profile_name = profile_directory.clone();
+        }
+        if profile_directory == new_profile_name {
+            profile_name_exists = true;
+        }
+    }
+
+    if !profile_name_exists {
+        println!("Profile {:?} not found.", new_profile_name);
+
+        if current_profile_name.is_empty() {
+            println!("No profile in use.");
+        } else {
+            println!("Current: {:?}", current_profile_name);
+        }
+        return Ok(());
+    }
+
+    let change_profile = || -> Result<(), String> {
+        for filename in &currfiles_prohash.tracked_file_names {
+            let file_to_remove_path = if filename == GITCONFIG_FILE_NAME {
+                app_paths.gitconfig_file_path.clone()
+            } else {
+                app_paths.ssh_dir_path.join(filename)
+            };
+
+            if let Err(err) = fs::remove_file(file_to_remove_path) {
+                eprintln!("Error: Could not remove file: {:?}", filename);
+                return Err(err.to_string());
+            }
+        }
+
+        let new_profile_source_path = app_paths.data_dir_path.join(new_profile_name);
+        let new_profile_file_names: Vec<String> =
+            utils::get_files(&new_profile_source_path).unwrap_or_else(|_| vec![]);
+
+        for filename in new_profile_file_names {
+            let destination_file_path = if filename == GITCONFIG_FILE_NAME {
+                &app_paths.gitconfig_file_path
+            } else {
+                &app_paths.ssh_dir_path.join(&filename)
+            };
+
+            if let Err(_) = utils::copy_file(
+                &new_profile_source_path.join(&filename),
+                destination_file_path,
+            ) {
+                return Err(format!("Error: Could not copy file: {:?}", filename));
+            } else {
+                println!("  {}", filename)
+            }
+        }
+
+        println!("Profile switched successfully!");
+        println!("Now using profile: {:?}", new_profile_name);
+        return Ok(());
+    };
+
+    if is_profile_saved || yes_flag {
+        return change_profile();
+    };
+
+    let prompt = "The current files have not been saved, or have been modified.\nThis action will remove them.\nAre you sure you want to continue?";
+
+    if utils::confirm(prompt) {
+        return change_profile();
+    } else {
+        println!("Profile switch canceled.");
+        if current_profile_name.is_empty() {
+            println!("No profile in use.");
+        } else {
+            println!("Current: {:?}", current_profile_name);
+        }
         return Ok(());
     }
 }
