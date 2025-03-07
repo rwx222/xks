@@ -37,8 +37,7 @@ fn main() {
             cli::version();
         }
         "help" | "--help" | "-h" => {
-            // TODO: help
-            cli::version();
+            cli::help();
         }
         "save" => {
             if let Err(e) = cli::save(second_arg, yes_flag) {

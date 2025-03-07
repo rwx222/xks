@@ -398,3 +398,34 @@ pub fn use_profile(new_profile_name: &str, yes_flag: bool) -> Result<(), String>
 pub fn version() {
     println!("{}", VERSION);
 }
+
+pub fn help() {
+    const HELP_TEXT: &str = r#"
+xks - Git profile switcher with SSH key management
+
+Usage:
+    xks <command> [options]
+
+Commands:
+    save <profile>     Save current Git and SSH config as a profile
+    remove <profile>   Delete a saved profile
+    use <profile>      Apply a saved profile
+    discard            Remove current Git and SSH config
+    list               Show saved profiles and current state
+    help               Show this help message
+    version            Show version number
+
+Options:
+    -y                 Skip confirmation prompts
+
+Profiles are stored in ~/.xks/<profile>. Only default Git and SSH config files
+(~/.gitconfig, ~/.ssh/config, id_ed25519, id_ecdsa, id_rsa, id_dsa) are managed.
+
+Examples:
+    xks save work      # Save current config as 'work'
+    xks use personal   # Switch to 'personal' profile
+    xks remove test    # Delete 'test' profile
+    xks discard        # Remove current Git/SSH config
+"#;
+    println!("{}", HELP_TEXT);
+}
