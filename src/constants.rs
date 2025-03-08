@@ -22,6 +22,8 @@ pub const YES_FLAG: &str = "-y";
 
 pub const HELP_LINE: &str = "See:\n    xks help";
 
+pub const PREVIOUS_PROFILE_FILE_NAME: &str = ".previous_profile";
+
 pub const PROFILE_NAME_MAX_LENGTH: usize = 50;
 
 pub const REMOVING_DIR_ERR: &str =

@@ -190,8 +190,8 @@ pub fn remove(profile_name: &str, yes_flag: bool) -> Result<(), String> {
     }
 }
 
-pub fn use_profile(new_profile_name: &str, yes_flag: bool) -> Result<(), String> {
-    if new_profile_name.is_empty() {
+pub fn use_profile(input_profile_name: &str, yes_flag: bool) -> Result<(), String> {
+    if input_profile_name.is_empty() {
         let lines = [
             format!("{}: Profile name cannot be empty.\n", APP_NAME),
             format!("Example:\n    {} use alex", APP_NAME),
@@ -211,14 +211,11 @@ pub fn use_profile(new_profile_name: &str, yes_flag: bool) -> Result<(), String>
     let mut current_profile_name = String::new();
     let mut is_profile_saved: bool = false;
 
-    let new_profile_source_path = app_paths.data_dir_path.join(new_profile_name);
-    let profile_exists: bool = new_profile_source_path.exists() && new_profile_source_path.is_dir();
-
-    for profile_directory in profile_dirs {
+    for profile_directory in &profile_dirs {
         let profile_prohash = utils::get_profile_hash(
             &app_paths,
             gitconfig_data.file_exists,
-            Some(&profile_directory),
+            Some(profile_directory),
         )?;
 
         if currfiles_prohash.hash == profile_prohash.hash {
@@ -227,13 +224,27 @@ pub fn use_profile(new_profile_name: &str, yes_flag: bool) -> Result<(), String>
         }
     }
 
+    let new_profile_name = utils::get_new_use_profile_name(
+        &app_paths,
+        &profile_dirs,
+        &current_profile_name,
+        input_profile_name,
+    );
+    let new_profile_source_path = app_paths.data_dir_path.join(&new_profile_name);
+    let profile_exists: bool = new_profile_source_path.exists() && new_profile_source_path.is_dir();
+
     let profile_in_use_msg = if current_profile_name.is_empty() {
         String::from("No profile in use.")
     } else {
         format!("Profile in use: {:?}", current_profile_name)
     };
 
-    if !profile_exists {
+    if new_profile_name == "-" {
+        return Err(format!(
+            "{}: No saved profiles available to use.\n\n{}",
+            APP_NAME, profile_in_use_msg
+        ));
+    } else if !profile_exists {
         return Err(format!(
             "{}: Profile {:?} not found.\n\n{}",
             APP_NAME, new_profile_name, profile_in_use_msg
@@ -274,6 +285,8 @@ pub fn use_profile(new_profile_name: &str, yes_flag: bool) -> Result<(), String>
                 ));
             }
         }
+
+        utils::write_to_file(app_paths.previous_profile_file_path, &current_profile_name).ok();
 
         println!(
             "\nProfile switched successfully!\n\nUsing profile: {:?}",
@@ -460,6 +473,7 @@ Examples:
     xks                # List saved profiles and current_files state
     xks save work      # Save current_files as 'work' profile
     xks use personal   # Switch to 'personal' profile
+    xks use -          # Switch back to the previous profile
     xks remove alex    # Delete 'alex' profile
     xks discard        # Remove current_files
 

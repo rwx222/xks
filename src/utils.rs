@@ -1,18 +1,19 @@
 use sha2::{Digest, Sha256};
 use std::env;
-use std::fs;
-use std::io::{self, Read, Write};
+use std::fs::{self, File};
+use std::io::{self, BufRead, Read, Write};
 use std::path::{Path, PathBuf};
 
 use crate::constants::{
-    DATA_DIR_NAME, GITCONFIG_FILE_NAME, READING_DIR_ERR, READING_HASH_FILES_ERR, SSH_DIR,
-    TRACKED_FILE_NAMES,
+    DATA_DIR_NAME, GITCONFIG_FILE_NAME, PREVIOUS_PROFILE_FILE_NAME, READING_DIR_ERR,
+    READING_HASH_FILES_ERR, SSH_DIR, TRACKED_FILE_NAMES,
 };
 
 pub struct AppPaths {
     pub gitconfig_file_path: PathBuf,
     pub data_dir_path: PathBuf,
     pub ssh_dir_path: PathBuf,
+    pub previous_profile_file_path: PathBuf,
 }
 
 pub fn get_app_paths() -> AppPaths {
@@ -21,11 +22,13 @@ pub fn get_app_paths() -> AppPaths {
     let gitconfig_file_path = Path::new(&home_path).join(GITCONFIG_FILE_NAME);
     let data_dir_path = Path::new(&home_path).join(DATA_DIR_NAME);
     let ssh_dir_path = Path::new(&home_path).join(SSH_DIR);
+    let previous_profile_file_path = Path::new(&data_dir_path).join(PREVIOUS_PROFILE_FILE_NAME);
 
     AppPaths {
         gitconfig_file_path,
         data_dir_path,
         ssh_dir_path,
+        previous_profile_file_path,
     }
 }
 
@@ -182,4 +185,74 @@ pub fn confirm(prompt: &str) -> bool {
         .expect("Error: Reading input.");
 
     matches!(input.trim().to_lowercase().as_str(), "yes" | "y")
+}
+
+pub fn read_first_line<T: AsRef<Path>>(file_path: T) -> String {
+    let res = match File::open(&file_path) {
+        Ok(file) => {
+            let mut lines = io::BufReader::new(file).lines();
+
+            lines
+                .next()
+                .unwrap_or_else(|| Ok(String::new()))
+                .map(|line| line.trim().to_string())
+                .unwrap_or_default()
+        }
+        Err(_) => String::new(),
+    };
+
+    res
+}
+
+pub fn write_to_file(file_path: PathBuf, content: &str) -> io::Result<()> {
+    if let Some(parent) = file_path.parent() {
+        fs::create_dir_all(parent)?;
+    }
+
+    let mut file = File::create(file_path)?;
+    file.write_all(content.as_bytes())?;
+
+    Ok(())
+}
+
+pub fn get_new_use_profile_name(
+    app_paths: &AppPaths,
+    profile_dirs: &Vec<String>,
+    current_profile_name: &String,
+    profile_name: &str,
+) -> String {
+    if profile_name == "-" && profile_dirs.len() > 0 {
+        if profile_dirs.len() == 1 {
+            return profile_dirs[0].clone();
+        } else if profile_dirs.len() == 2 {
+            if let Some(first_different_profile) = profile_dirs
+                .iter()
+                .find(|&item| item != current_profile_name)
+            {
+                return first_different_profile.clone();
+            }
+        } else {
+            let previous_profile_name = read_first_line(&app_paths.previous_profile_file_path);
+
+            if !previous_profile_name.is_empty() {
+                let previous_profile_source_path =
+                    app_paths.data_dir_path.join(&previous_profile_name);
+                let previous_profile_exists: bool =
+                    previous_profile_source_path.exists() && previous_profile_source_path.is_dir();
+
+                if previous_profile_exists {
+                    return previous_profile_name;
+                }
+            }
+
+            if let Some(first_different_profile) = profile_dirs
+                .iter()
+                .find(|&item| item != current_profile_name)
+            {
+                return first_different_profile.clone();
+            }
+        }
+    }
+
+    profile_name.to_string()
 }
