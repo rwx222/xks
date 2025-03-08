@@ -113,7 +113,7 @@ pub fn get_profile_hash(
 pub fn get_dirs<T: AsRef<Path>>(path: T) -> Result<Vec<String>, String> {
     let mut data: Vec<String> = Vec::new();
 
-    let entries = fs::read_dir(&path).map_err(|e| format!("{}\n{}", READING_DIR_ERR, e))?;
+    let entries = fs::read_dir(&path).map_err(|e| format!("{}\n\n{}", READING_DIR_ERR, e))?;
 
     for entry in entries.filter_map(Result::ok) {
         if entry.path().is_dir() {
@@ -121,19 +121,23 @@ pub fn get_dirs<T: AsRef<Path>>(path: T) -> Result<Vec<String>, String> {
         }
     }
 
+    data.sort();
+
     Ok(data)
 }
 
 pub fn get_files<T: AsRef<Path>>(path: T) -> Result<Vec<String>, String> {
     let mut data: Vec<String> = Vec::new();
 
-    let entries = fs::read_dir(&path).map_err(|e| format!("{}\n{}", READING_DIR_ERR, e))?;
+    let entries = fs::read_dir(&path).map_err(|e| format!("{}\n\n{}", READING_DIR_ERR, e))?;
 
     for entry in entries.filter_map(Result::ok) {
         if entry.path().is_file() {
             data.push(entry.file_name().to_string_lossy().into_owned())
         }
     }
+
+    data.sort();
 
     Ok(data)
 }
@@ -169,7 +173,7 @@ pub fn copy_file(source_file_path: &PathBuf, destination_file_path: &PathBuf) ->
 }
 
 pub fn confirm(prompt: &str) -> bool {
-    print!("{} [yes/no] (y/n): ", prompt);
+    print!("\n{} [yes/no] (y/n): ", prompt);
     io::stdout().flush().expect("Error: Writing stdout.");
 
     let mut input = String::new();

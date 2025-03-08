@@ -6,7 +6,7 @@ mod constants;
 mod git;
 mod utils;
 
-use constants::{HELP_LINE, YES_FLAG};
+use constants::{APP_NAME, HELP_LINE, YES_FLAG};
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -27,18 +27,14 @@ fn main() {
     let second_arg = args.get(2).map(|s| s.as_str()).unwrap_or_else(|| "");
 
     if args.len() > 3 {
-        eprintln!("Expected at most two arguments, but more were provided.");
-        println!("{}", HELP_LINE);
+        eprintln!(
+            "{}: Too many arguments provided.\n\n{}",
+            APP_NAME, HELP_LINE
+        );
         process::exit(1);
     }
 
     match first_arg {
-        "version" | "--version" | "-v" => {
-            cli::version();
-        }
-        "help" | "--help" | "-h" => {
-            cli::help();
-        }
         "save" => {
             if let Err(e) = cli::save(second_arg, yes_flag) {
                 eprintln!("{}", e);
@@ -70,10 +66,15 @@ fn main() {
                 process::exit(1);
             }
         }
+        "version" | "--version" | "-v" => {
+            cli::version();
+        }
+        "help" | "--help" | "-h" => {
+            cli::help();
+        }
         _ => {
             // wrong command
-            eprintln!("Unrecognized command. Please check the available commands.");
-            println!("{}", HELP_LINE);
+            eprintln!("{}: Unrecognized command.\n\n{}", APP_NAME, HELP_LINE);
         }
     }
 }
