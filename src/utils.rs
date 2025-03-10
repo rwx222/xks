@@ -5,8 +5,8 @@ use std::io::{self, BufRead, Read, Write};
 use std::path::{Path, PathBuf};
 
 use crate::constants::{
-    DATA_DIR_NAME, GITCONFIG_FILE_NAME, PREVIOUS_PROFILE_FILE_NAME, READING_DIR_ERR,
-    READING_HASH_FILES_ERR, SSH_DIR, TRACKED_FILE_NAMES,
+    CONFIG_DIR_NAME, DATA_DIR_NAME, GIT_DIR_NAME, GITCONFIG_FILE_NAME, PREVIOUS_PROFILE_FILE_NAME,
+    READING_DIR_ERR, READING_HASH_FILES_ERR, SSH_DIR, TRACKED_FILE_NAMES,
 };
 
 pub struct AppPaths {
@@ -22,7 +22,9 @@ pub fn get_app_paths() -> AppPaths {
     let gitconfig_file_path = Path::new(&home_path).join(GITCONFIG_FILE_NAME);
     let data_dir_path = Path::new(&home_path).join(DATA_DIR_NAME);
     let ssh_dir_path = Path::new(&home_path).join(SSH_DIR);
-    let previous_profile_file_path = Path::new(&data_dir_path).join(PREVIOUS_PROFILE_FILE_NAME);
+    let previous_profile_file_path = Path::new(&data_dir_path)
+        .join(CONFIG_DIR_NAME)
+        .join(PREVIOUS_PROFILE_FILE_NAME);
 
     AppPaths {
         gitconfig_file_path,
@@ -120,7 +122,11 @@ pub fn get_dirs<T: AsRef<Path>>(path: T) -> Result<Vec<String>, String> {
 
     for entry in entries.filter_map(Result::ok) {
         if entry.path().is_dir() {
-            data.push(entry.file_name().to_string_lossy().into_owned())
+            let item_name = entry.file_name().to_string_lossy().into_owned();
+
+            if item_name != CONFIG_DIR_NAME && item_name != GIT_DIR_NAME {
+                data.push(item_name);
+            }
         }
     }
 
@@ -136,7 +142,8 @@ pub fn get_files<T: AsRef<Path>>(path: T) -> Result<Vec<String>, String> {
 
     for entry in entries.filter_map(Result::ok) {
         if entry.path().is_file() {
-            data.push(entry.file_name().to_string_lossy().into_owned())
+            let item_name = entry.file_name().to_string_lossy().into_owned();
+            data.push(item_name);
         }
     }
 
