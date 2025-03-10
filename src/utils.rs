@@ -5,7 +5,7 @@ use std::io::{self, BufRead, Read, Write};
 use std::path::{Path, PathBuf};
 
 use crate::constants::{
-    CONFIG_DIR_NAME, DATA_DIR_NAME, GIT_DIR_NAME, GITCONFIG_FILE_NAME, PREVIOUS_PROFILE_FILE_NAME,
+    CONFIG_DIR_NAME, DATA_DIR_NAME, GITCONFIG_FILE_NAME, PREVIOUS_PROFILE_FILE_NAME,
     READING_DIR_ERR, READING_HASH_FILES_ERR, SSH_DIR, TRACKED_FILE_NAMES,
 };
 
@@ -115,7 +115,7 @@ pub fn get_profile_hash(
     }
 }
 
-pub fn get_dirs<T: AsRef<Path>>(path: T) -> Result<Vec<String>, String> {
+pub fn get_profile_dirs<T: AsRef<Path>>(path: T) -> Result<Vec<String>, String> {
     let mut data: Vec<String> = Vec::new();
 
     let entries = fs::read_dir(&path).map_err(|e| format!("{}\n\n{}", READING_DIR_ERR, e))?;
@@ -124,7 +124,7 @@ pub fn get_dirs<T: AsRef<Path>>(path: T) -> Result<Vec<String>, String> {
         if entry.path().is_dir() {
             let item_name = entry.file_name().to_string_lossy().into_owned();
 
-            if item_name != CONFIG_DIR_NAME && item_name != GIT_DIR_NAME {
+            if !item_name.starts_with(".") && !item_name.contains(" ") {
                 data.push(item_name);
             }
         }

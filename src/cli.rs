@@ -71,7 +71,7 @@ pub fn save(profile_name: &str, yes_flag: bool) -> Result<(), String> {
     }
 
     let profile_dirs: Vec<String> =
-        utils::get_dirs(&app_paths.data_dir_path).unwrap_or_else(|_| vec![]);
+        utils::get_profile_dirs(&app_paths.data_dir_path).unwrap_or_else(|_| vec![]);
 
     let mut profile_already_exists_and_has_changes: bool = false;
 
@@ -204,7 +204,7 @@ pub fn use_profile(input_profile_name: &str, yes_flag: bool) -> Result<(), Strin
     let gitconfig_data = git::get_gitconfig_data(&app_paths.gitconfig_file_path);
 
     let profile_dirs: Vec<String> =
-        utils::get_dirs(&app_paths.data_dir_path).unwrap_or_else(|_| vec![]);
+        utils::get_profile_dirs(&app_paths.data_dir_path).unwrap_or_else(|_| vec![]);
 
     let currfiles_prohash = utils::get_profile_hash(&app_paths, gitconfig_data.file_exists, None)?;
 
@@ -314,7 +314,7 @@ pub fn discard_files(yes_flag: bool) -> Result<(), String> {
     let gitconfig_data = git::get_gitconfig_data(&app_paths.gitconfig_file_path);
 
     let profile_dirs: Vec<String> =
-        utils::get_dirs(&app_paths.data_dir_path).unwrap_or_else(|_| vec![]);
+        utils::get_profile_dirs(&app_paths.data_dir_path).unwrap_or_else(|_| vec![]);
 
     let currfiles_prohash = utils::get_profile_hash(&app_paths, gitconfig_data.file_exists, None)?;
 
@@ -384,7 +384,7 @@ pub fn list() -> Result<(), String> {
     let gitconfig_data = git::get_gitconfig_data(&app_paths.gitconfig_file_path);
 
     let profile_dirs: Vec<String> =
-        utils::get_dirs(&app_paths.data_dir_path).unwrap_or_else(|_| vec![]);
+        utils::get_profile_dirs(&app_paths.data_dir_path).unwrap_or_else(|_| vec![]);
 
     let currfiles_prohash = utils::get_profile_hash(&app_paths, gitconfig_data.file_exists, None)?;
 
