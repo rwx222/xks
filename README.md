@@ -1,7 +1,7 @@
 # xks - Git Profile Switcher with SSH Key Management
 
 `xks` is a simple CLI tool for switching between multiple Git profiles,
-seamlessly managing both `.gitconfig` and SSH keys. It allows you to save,
+seamlessly managing both `.gitconfig` and `SSH keys`. It allows you to save,
 apply, and remove profiles while ensuring that only the necessary files are
 modified.
 
@@ -13,7 +13,7 @@ modified.
 
 ## Installation
 
-### Install a Pre-Compiled Binary
+### (Option 1) Install a Pre-Compiled Binary
 
 Visit [https://github.com/andresdotsh/xks/releases](https://github.com/andresdotsh/xks/releases)
 and download the appropriate archive for your operating system and architecture.
@@ -21,7 +21,7 @@ and download the appropriate archive for your operating system and architecture.
 Extract the `xks` binary from the archive into a directory in your `$PATH`,
 such as `/usr/local/bin/`.
 
-### Build from Source
+### (Option 2) Build from Source
 
 You can also build `xks` from source using Rust:
 
@@ -56,17 +56,17 @@ xks <command> [options]
 
 ### Commands
 
-- `xks save <profile>` – Save the **current_files** as a profile.
-- `xks use <profile>` – Apply a saved profile.
-- `xks use -` – Switch back to the previously used profile.
-- `xks remove <profile>` – Delete a saved profile.
-- `xks discard` – Remove the **current_files**.
-- `xks version` – Show the version number.
-- `xks help` – Show usage information.
+- `xks save <profile>` Save the **current_files** as a profile.
+- `xks use <profile>` Apply a saved profile.
+- `xks use -` Switch back to the previously used profile.
+- `xks remove <profile>` Delete a saved profile.
+- `xks discard` Remove the **current_files**.
+- `xks version` Show the version number.
+- `xks help` Show usage information.
 
 ### Options
 
-- `-y` – Skip confirmation prompts.
+- `-y` Skip confirmation prompts.
 
 ## Examples
 
