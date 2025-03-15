@@ -13,17 +13,48 @@ modified.
 
 ## Installation
 
-### (Option 1) Install a Pre-Compiled Binary
+You can install `xks` in three different ways:
 
-Visit [https://github.com/rwx222/xks/releases](https://github.com/rwx222/xks/releases)
-and download the appropriate archive for your operating system and architecture.
+---
 
-Extract the `xks` binary from the archive into a directory in your `$PATH`,
-such as `/usr/local/bin/`.
+### (Option 1) Install with curl or wget (recommended)
 
-### (Option 2) Build from Source
+To install automatically, run one of the following commands:
 
-You can also build `xks` from source using Rust:
+With **curl**:
+
+```sh
+sh -c "$(curl -fsSL https://raw.githubusercontent.com/rwx222/xks/main/install.sh)"
+```
+
+Or with **wget**:
+
+```sh
+sh -c "$(wget -qO- https://raw.githubusercontent.com/rwx222/xks/main/install.sh)"
+```
+
+> **Note:** The `sh -c` part is optional. You can also download and inspect the
+script before running it.
+
+---
+
+### (Option 2) Download a Pre-Compiled Binary
+
+Visit [GitHub Releases](https://github.com/rwx222/xks/releases) and download
+the appropriate archive for your **OS and architecture**.
+
+Then, extract the `xks` binary and move it to a directory in your `$PATH`,
+such as:
+
+```sh
+tar -xzf xks-<version>-<os>-<arch>.tar.gz -C /usr/local/bin/
+```
+
+---
+
+### (Option 3) Build from Source (requires Rust)
+
+If you prefer to build `xks` yourself, you can compile it with Rust:
 
 ```sh
 cargo build --release
@@ -31,6 +62,8 @@ cp target/release/xks /usr/local/bin/
 ```
 
 Or move it to any directory included in your `$PATH`.
+
+---
 
 ## How It Works
 
