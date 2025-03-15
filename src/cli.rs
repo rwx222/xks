@@ -479,7 +479,7 @@ Examples:
 
 All data is stored in ~/.xks, including saved profiles.
 
-For more details: https://github.com/andresdotsh/xks
+For more details: https://github.com/rwx222/xks
 "#;
     println!("{}", HELP_TEXT);
 }

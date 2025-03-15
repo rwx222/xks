@@ -15,7 +15,7 @@ modified.
 
 ### (Option 1) Install a Pre-Compiled Binary
 
-Visit [https://github.com/andresdotsh/xks/releases](https://github.com/andresdotsh/xks/releases)
+Visit [https://github.com/rwx222/xks/releases](https://github.com/rwx222/xks/releases)
 and download the appropriate archive for your operating system and architecture.
 
 Extract the `xks` binary from the archive into a directory in your `$PATH`,
