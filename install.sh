@@ -1,13 +1,16 @@
-#!/bin/bash
+#!/bin/sh
 set -e
-set -o pipefail
+
+(set -o pipefail) 2>/dev/null && set -o pipefail
 
 OS=$(uname -s | tr '[:upper:]' '[:lower:]')
+[ "$OS" = "darwin" ] && OS="macos"
 
 ARCH=$(uname -m)
+
 case $ARCH in
     arm64) ARCH="arm64" ;;              # arm64 macos (apple silicon)
-    aarch64) ARCH="aarch64" ;;          # arm64 linux
+    aarch64) ARCH="arm64" ;;            # arm64 linux
     x86_64) ARCH="x86_64" ;;            # 64-bit (linux or macos)
     i386|i486|i586|i686) ARCH="i686" ;; # 32-bit linux
     *) echo "Unsupported architecture: $ARCH" >&2; exit 1 ;;
@@ -43,10 +46,11 @@ if [ ! -w "$DEST_DIR" ]; then
 fi
 
 echo "Downloading $URL"
+
 if ! $DOWNLOADER "$URL" | tar -xz -C "$DEST_DIR"; then
     echo "Error: Download or extraction failed." >&2
     exit 1
+else
+    echo "Installation complete!"
+    echo "Run 'xks help' to get started."
 fi
-
-echo "Installation complete!"
-echo "Run 'xks help' to get started."
