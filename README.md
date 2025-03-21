@@ -22,13 +22,13 @@ To install automatically, run one of the following commands:
 With **curl**:
 
 ```sh
-sh -c "$(curl -fsSL https://xks.rwx222.com/install.sh)"
+bash -c "$(curl -fsSL https://xks.rwx222.com/install.sh)"
 ```
 
 Or with **wget**:
 
 ```sh
-sh -c "$(wget -qO- https://xks.rwx222.com/install.sh)"
+bash -c "$(wget -qO- https://xks.rwx222.com/install.sh)"
 ```
 
 > **Note:** The `sh -c` part is optional. You can also download and inspect the
