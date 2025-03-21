@@ -15,22 +15,20 @@ modified.
 
 You can install `xks` in three different ways:
 
----
-
-### (Option 1) Install with curl or wget (recommended)
+### (Option 1) Install with curl or wget `(recommended)`
 
 To install automatically, run one of the following commands:
 
 With **curl**:
 
 ```sh
-sh -c "$(curl -fsSL https://raw.githubusercontent.com/rwx222/xks/main/install.sh)"
+sh -c "$(curl -fsSL https://xks.rwx222.com/install.sh)"
 ```
 
 Or with **wget**:
 
 ```sh
-sh -c "$(wget -qO- https://raw.githubusercontent.com/rwx222/xks/main/install.sh)"
+sh -c "$(wget -qO- https://xks.rwx222.com/install.sh)"
 ```
 
 > **Note:** The `sh -c` part is optional. You can also download and inspect the
@@ -52,7 +50,7 @@ tar -xzf xks-<version>-<os>-<arch>.tar.gz -C /usr/local/bin/
 
 ---
 
-### (Option 3) Build from Source (requires Rust)
+### (Option 3) Build from Source `(requires rust)`
 
 If you prefer to build `xks` yourself, you can compile it with Rust:
 
@@ -115,3 +113,33 @@ xks discard        # Remove current_files
 ## License
 
 `xks` is released under the MIT License.
+
+---
+
+# Why I Built `xks`
+
+I created `xks` because I often need to switch between different Git profiles
+for work and personal projects.
+
+Since SSH keys cannot be shared between multiple accounts, managing them
+manually quickly became frustrating. While there are existing tools and other
+techniques to solve this problem, I wanted to build my own as a way to learn
+**Rust**.
+
+Although `xks` was originally designed for Git profiles, it can be useful in
+different scenarios:
+
+- Switching between Git profiles, with or without SSH keys.
+- Managing SSH keys independently, even without Git, for accessing multiple
+  remote servers.
+- Handling both Git profiles and SSH keys together, making it easy to manage
+  multiple identities.
+
+This allows you to:
+
+- Switch between SSH keys for different remote servers.
+- Separate work and personal Git profiles.
+- Manage multiple Git accounts for freelance clients.
+- Use different Git configurations per profile.
+
+If you find yourself in a similar situation, give `xks` a try! 🚀
