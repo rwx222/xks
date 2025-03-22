@@ -1,6 +1,6 @@
 # xks - Git Profile Switcher with SSH Key Management
 
-`xks` is a simple CLI tool for switching between multiple Git profiles,
+`xks` is a CLI tool for switching between multiple Git profiles,
 seamlessly managing both `.gitconfig` and `SSH keys`. It allows you to save,
 apply, and remove profiles while ensuring that only the necessary files are
 modified.
