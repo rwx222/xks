@@ -6,6 +6,7 @@ apply, and remove profiles while ensuring that only the necessary files are
 modified.
 
 ## Features
+
 - Save and switch between multiple Git profiles.
 - Automatically updates `.gitconfig` and SSH keys.
 - Ensures that only default Git and SSH files are managed.
@@ -84,6 +85,7 @@ xks <command> [options]
 
 ### Commands
 
+- `xks` List saved profiles and **current_files** state.
 - `xks save <profile>` Save the **current_files** as a profile.
 - `xks use <profile>` Apply a saved profile.
 - `xks use -` Switch back to the previously used profile.
