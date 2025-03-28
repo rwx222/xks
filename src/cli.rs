@@ -2,7 +2,7 @@ use std::fs;
 use std::io::ErrorKind;
 
 use crate::constants::{
-    APP_NAME, GITCONFIG_FILE_NAME, PROFILE_NAME_MAX_LENGTH, REMOVING_DIR_ERR, VERSION,
+    APP_NAME, GITCONFIG_FILE_NAME, PROFILE_NAME_MAX_LENGTH, REMOVING_DIR_ERR, TOGGLE_PREV, VERSION,
 };
 use crate::git;
 use crate::utils;
@@ -180,9 +180,12 @@ pub fn remove(profile_name: &str, yes_flag: bool) -> Result<(), String> {
         return remove_profile();
     }
 
-    let prompt = "Are you sure you want to remove this profile?";
+    let prompt = format!(
+        "This action will delete the profile {:?} and all its files.\nAre you sure you want to proceed?",
+        profile_name
+    );
 
-    if utils::confirm(prompt) {
+    if utils::confirm(prompt.as_str()) {
         return remove_profile();
     } else {
         println!("\nNo profile was removed.");
@@ -208,7 +211,7 @@ pub fn use_profile(input_profile_name: &str, yes_flag: bool) -> Result<(), Strin
 
     let currfiles_prohash = utils::get_profile_hash(&app_paths, gitconfig_data.file_exists, None)?;
 
-    let mut current_profile_name = String::new();
+    let mut current_profile_names: Vec<String> = vec![];
     let mut is_profile_saved: bool = false;
 
     for profile_directory in &profile_dirs {
@@ -220,28 +223,33 @@ pub fn use_profile(input_profile_name: &str, yes_flag: bool) -> Result<(), Strin
 
         if currfiles_prohash.hash == profile_prohash.hash {
             is_profile_saved = true;
-            current_profile_name = profile_directory.clone();
+            current_profile_names.push(profile_directory.clone());
         }
     }
 
     let new_profile_name = utils::get_new_use_profile_name(
         &app_paths,
         &profile_dirs,
-        &current_profile_name,
+        &current_profile_names,
         input_profile_name,
     );
     let new_profile_source_path = app_paths.data_dir_path.join(&new_profile_name);
     let profile_exists: bool = new_profile_source_path.exists() && new_profile_source_path.is_dir();
 
-    let profile_in_use_msg = if current_profile_name.is_empty() {
+    let profile_in_use_msg = if current_profile_names.is_empty() {
         String::from("No profile in use.")
     } else {
-        format!("Profile in use: {:?}", current_profile_name)
+        format!("Profile in use: {:?}", current_profile_names.join(" - "))
     };
 
-    if new_profile_name == "-" {
+    if profile_dirs.is_empty() {
         return Err(format!(
             "{}: No saved profiles available to use.\n\n{}",
+            APP_NAME, profile_in_use_msg
+        ));
+    } else if new_profile_name == TOGGLE_PREV {
+        return Err(format!(
+            "{}: No saved profiles different from the current one.\n\n{}",
             APP_NAME, profile_in_use_msg
         ));
     } else if !profile_exists {
@@ -286,7 +294,13 @@ pub fn use_profile(input_profile_name: &str, yes_flag: bool) -> Result<(), Strin
             }
         }
 
-        utils::write_to_file(app_paths.previous_profile_file_path, &current_profile_name).ok();
+        if current_profile_names.len() > 0 {
+            utils::write_to_file(
+                app_paths.previous_profile_file_path,
+                &current_profile_names[0],
+            )
+            .ok();
+        }
 
         println!(
             "\nProfile switched successfully!\n\nUsing profile: {:?}",
@@ -299,7 +313,15 @@ pub fn use_profile(input_profile_name: &str, yes_flag: bool) -> Result<(), Strin
         return change_profile();
     };
 
-    let prompt = "The current files have not been saved, or have been modified.\nThis action will remove them.\nAre you sure you want to continue?";
+    println!(
+        "\ncurrent files ({}):",
+        currfiles_prohash.tracked_file_names.len()
+    );
+    for filename in &currfiles_prohash.tracked_file_names {
+        println!("  {}", filename);
+    }
+
+    let prompt = "The current files have not been saved or have been modified.\nThis action will delete them.\nAre you sure you want to proceed?";
 
     if utils::confirm(prompt) {
         return change_profile();
@@ -362,14 +384,14 @@ pub fn discard_files(yes_flag: bool) -> Result<(), String> {
     }
 
     println!(
-        "current files ({}):",
+        "\ncurrent files ({}):",
         currfiles_prohash.tracked_file_names.len()
     );
     for filename in &currfiles_prohash.tracked_file_names {
         println!("  {}", filename);
     }
 
-    let prompt = "The current files have not been saved, or have been modified.\nThis action will remove them.\nAre you sure you want to discard them?";
+    let prompt = "The current files have not been saved or have been modified.\nThis action will delete them.\nAre you sure you want to proceed?";
 
     if utils::confirm(prompt) {
         return remove_current_files();
@@ -388,7 +410,7 @@ pub fn list() -> Result<(), String> {
 
     let currfiles_prohash = utils::get_profile_hash(&app_paths, gitconfig_data.file_exists, None)?;
 
-    let mut current_profile_name = String::new();
+    let mut current_profile_names: Vec<String> = vec![];
 
     println!("\n[saved profiles: {}]", profile_dirs.len());
 
@@ -402,7 +424,7 @@ pub fn list() -> Result<(), String> {
 
         if currfiles_prohash.hash == profile_prohash.hash {
             prefix = "*";
-            current_profile_name = profile_directory.clone();
+            current_profile_names.push(profile_directory.clone());
         }
 
         println!("{} {}", prefix, profile_directory);
@@ -410,18 +432,18 @@ pub fn list() -> Result<(), String> {
     println!("");
 
     if currfiles_prohash.tracked_file_names.len() == 0 {
-        println!("--- no profile in use ---");
-        println!("--- current files (.gitconfig and ssh keys) not found ---");
-    } else if current_profile_name.is_empty() {
-        println!("--- no profile in use ---");
-        println!("--- current files have not been saved, or have been modified ---");
+        println!("--- No profile in use ---");
+        println!("Current files (.gitconfig and/or SSH keys) not found.");
+    } else if current_profile_names.is_empty() {
+        println!("--- No profile in use ---");
+        println!("Current files have not been saved, or have been modified.");
     } else {
-        println!("(current: {})", current_profile_name);
+        println!("(current: {})", current_profile_names.join(" - "));
     }
 
     if gitconfig_data.file_exists {
-        println!("  gitconfig_name:  {:?}", gitconfig_data.name);
-        println!("  gitconfig_email: {:?}", gitconfig_data.email);
+        println!("  gitconfig name:  {:?}", gitconfig_data.name);
+        println!("  gitconfig email: {:?}", gitconfig_data.email);
     }
 
     println!(
@@ -460,9 +482,9 @@ Usage:
 
 Commands:
     save <profile>     Save current_files as a profile
-    remove <profile>   Delete a saved profile
     use <profile>      Apply a saved profile
-    discard            Remove current_files
+    remove <profile>   Delete a saved profile
+    discard            Delete current_files
     version            Show version number
     help               Show this help message
 
@@ -475,7 +497,7 @@ Examples:
     xks use personal   # Switch to 'personal' profile
     xks use -          # Switch back to the previous profile
     xks remove alex    # Delete 'alex' profile
-    xks discard        # Remove current_files
+    xks discard        # Delete current_files
 
 All data is stored in ~/.xks, including saved profiles.
 

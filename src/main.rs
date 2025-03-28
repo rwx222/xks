@@ -6,7 +6,7 @@ mod constants;
 mod git;
 mod utils;
 
-use constants::{APP_NAME, HELP_LINE, YES_FLAG};
+use constants::{APP_NAME, HELP_LINE, TOGGLE_PREV, YES_FLAG};
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -41,7 +41,7 @@ fn main() {
                 process::exit(1);
             }
         }
-        "remove" => {
+        "remove" | "delete" => {
             if let Err(e) = cli::remove(second_arg, yes_flag) {
                 eprintln!("{}", e);
                 process::exit(1);
@@ -49,6 +49,12 @@ fn main() {
         }
         "use" => {
             if let Err(e) = cli::use_profile(second_arg, yes_flag) {
+                eprintln!("{}", e);
+                process::exit(1);
+            }
+        }
+        TOGGLE_PREV => {
+            if let Err(e) = cli::use_profile(TOGGLE_PREV, yes_flag) {
                 eprintln!("{}", e);
                 process::exit(1);
             }

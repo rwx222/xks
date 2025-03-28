@@ -3,6 +3,8 @@ set -e
 
 (set -o pipefail) 2>/dev/null && set -o pipefail
 
+VERSION="v1.0.0"
+
 OS=$(uname -s | tr '[:upper:]' '[:lower:]')
 [ "$OS" = "darwin" ] && OS="macos"
 
@@ -16,7 +18,6 @@ case $ARCH in
     *) echo "Unsupported architecture: $ARCH" >&2; exit 1 ;;
 esac
 
-VERSION="v1.0.0"
 FILENAME="xks-${VERSION}-${OS}-${ARCH}.tar.gz"
 URL="https://github.com/rwx222/xks/releases/download/$VERSION/$FILENAME"
 

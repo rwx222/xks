@@ -1,4 +1,4 @@
-pub const VERSION: &str = "1.0.0";
+pub const VERSION: &str = "1.0.1";
 
 pub const APP_NAME: &str = "xks";
 pub const DATA_DIR_NAME: &str = ".xks";
@@ -22,6 +22,8 @@ pub const TRACKED_FILE_NAMES: [&str; 10] = [
 pub const PREVIOUS_PROFILE_FILE_NAME: &str = "previous_profile";
 
 pub const YES_FLAG: &str = "-y";
+
+pub const TOGGLE_PREV: &str = "-";
 
 pub const HELP_LINE: &str = "See:\n    xks help";
 

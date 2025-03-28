@@ -6,7 +6,7 @@ use std::path::{Path, PathBuf};
 
 use crate::constants::{
     CONFIG_DIR_NAME, DATA_DIR_NAME, GITCONFIG_FILE_NAME, PREVIOUS_PROFILE_FILE_NAME,
-    READING_DIR_ERR, READING_HASH_FILES_ERR, SSH_DIR, TRACKED_FILE_NAMES,
+    READING_DIR_ERR, READING_HASH_FILES_ERR, SSH_DIR, TOGGLE_PREV, TRACKED_FILE_NAMES,
 };
 
 pub struct AppPaths {
@@ -225,16 +225,16 @@ pub fn write_to_file(file_path: PathBuf, content: &str) -> io::Result<()> {
 pub fn get_new_use_profile_name(
     app_paths: &AppPaths,
     profile_dirs: &Vec<String>,
-    current_profile_name: &String,
+    current_profile_names: &Vec<String>,
     profile_name: &str,
 ) -> String {
-    if profile_name == "-" && profile_dirs.len() > 0 {
+    if profile_name == TOGGLE_PREV && profile_dirs.len() > 0 {
         if profile_dirs.len() == 1 {
             return profile_dirs[0].clone();
         } else if profile_dirs.len() == 2 {
             if let Some(first_different_profile) = profile_dirs
                 .iter()
-                .find(|&item| item != current_profile_name)
+                .find(|&item| !current_profile_names.contains(item))
             {
                 return first_different_profile.clone();
             }
@@ -254,7 +254,7 @@ pub fn get_new_use_profile_name(
 
             if let Some(first_different_profile) = profile_dirs
                 .iter()
-                .find(|&item| item != current_profile_name)
+                .find(|&item| !current_profile_names.contains(item))
             {
                 return first_different_profile.clone();
             }
