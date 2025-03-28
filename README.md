@@ -2,7 +2,7 @@
 
 `xks` is a CLI tool for switching between multiple Git profiles,
 seamlessly managing both `.gitconfig` and `SSH keys`. It allows you to save,
-apply, and remove profiles while ensuring that only the necessary files are
+apply, and delete profiles while ensuring that only the necessary files are
 modified.
 
 ## Features
@@ -90,7 +90,7 @@ xks <command> [options]
 - `xks use <profile>` Apply a saved profile.
 - `xks use -` Switch back to the previously used profile.
 - `xks remove <profile>` Delete a saved profile.
-- `xks discard` Remove the **current_files**.
+- `xks discard` Delete the **current_files**.
 - `xks version` Show the version number.
 - `xks help` Show usage information.
 
@@ -106,7 +106,7 @@ xks save work      # Save current_files as 'work' profile
 xks use personal   # Switch to 'personal' profile
 xks use -          # Switch back to the previous profile
 xks remove alex    # Delete 'alex' profile
-xks discard        # Remove current_files
+xks discard        # Delete current_files
 ```
 
 ## License
