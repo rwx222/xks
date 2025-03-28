@@ -3,7 +3,7 @@ set -e
 
 (set -o pipefail) 2>/dev/null && set -o pipefail
 
-VERSION="v1.0.0"
+VERSION="v1.0.1"
 
 OS=$(uname -s | tr '[:upper:]' '[:lower:]')
 [ "$OS" = "darwin" ] && OS="macos"
