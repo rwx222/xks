@@ -32,6 +32,8 @@ Or with **wget**:
 wget -qO- https://xks.rwx222.com/install.sh | sh
 ```
 
+---
+
 > [!IMPORTANT]
 >
 > If you get a **"No write permission"** error during installation, try adding `sudo` before `sh` (the install command):
@@ -43,6 +45,8 @@ wget -qO- https://xks.rwx222.com/install.sh | sh
 > ```sh
 > wget -qO- https://xks.rwx222.com/install.sh | sudo sh
 > ```
+
+---
 
 > [!IMPORTANT]
 >
