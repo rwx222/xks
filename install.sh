@@ -40,9 +40,27 @@ fi
 DEST_DIR="/usr/local/bin"
 
 if [ ! -w "$DEST_DIR" ]; then
-    echo "URL: $URL" >&2
-    echo "Error: No write permission for $DEST_DIR." >&2
-    echo "Try running with 'sudo' or as root user." >&2
+    echo "Error: No write permission for: $DEST_DIR" >&2
+    echo "" >&2
+    echo "Try running with 'sudo' or as root user:" >&2
+
+    if command -v curl >/dev/null 2>&1; then
+        echo "    curl -fsSL https://xks.rwx222.com/install.sh | sudo sh" >&2
+    else
+        echo "    wget -qO- https://xks.rwx222.com/install.sh | sudo sh" >&2
+    fi
+
+    echo "" >&2
+    echo "Or try manually downloading, extracting, and moving the binary from:" >&2
+    echo "    $URL" >&2
+
+    if [ "$OS" = "macos" ]; then
+        echo "" >&2
+        echo "Note for macOS users: You might need to allow the binary to run in" >&2
+        echo "'System Settings' > 'Privacy & Security'" >&2
+        echo "after installation and the first time you run 'xks'" >&2
+    fi
+
     exit 1
 fi
 
@@ -52,6 +70,18 @@ if ! $DOWNLOADER "$URL" | tar -xz -C "$DEST_DIR"; then
     echo "Error: Download or extraction failed." >&2
     exit 1
 else
+    echo "" >&2
     echo "Installation complete!"
     echo "Run 'xks help' to get started."
+
+    if [ "$OS" = "macos" ]; then
+        echo "" >&2
+        echo "Note for macOS users: You might need to allow the binary to run in" >&2
+        echo "'System Settings' > 'Privacy & Security'" >&2
+        echo "after installation and the first time you run 'xks'" >&2
+    fi
+
+    if command -v xattr >/dev/null 2>&1; then
+        xattr -d com.apple.quarantine "$DEST_DIR/xks" 2>/dev/null || true
+    fi
 fi

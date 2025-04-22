@@ -32,6 +32,25 @@ Or with **wget**:
 wget -qO- https://xks.rwx222.com/install.sh | sh
 ```
 
+> [!IMPORTANT]
+>
+> If you get a **"No write permission"** error during installation, try adding `sudo` before `sh` (the install command):
+>
+> ```sh
+> curl -fsSL https://xks.rwx222.com/install.sh | sudo sh
+> ```
+> Or:
+> ```sh
+> wget -qO- https://xks.rwx222.com/install.sh | sudo sh
+> ```
+
+> [!IMPORTANT]
+>
+> On **macOS**, after installation and the first time you run `xks`, you might need to manually allow the binary to run by going to:
+>
+> **System Settings > Privacy & Security**
+>
+
 ---
 
 ### (Option 2) Download a Pre-Compiled Binary
