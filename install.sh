@@ -45,9 +45,9 @@ if [ ! -w "$DEST_DIR" ]; then
     echo "Try running with 'sudo' or as root user:" >&2
 
     if command -v curl >/dev/null 2>&1; then
-        echo "    curl -fsSL https://xks.rwx222.com/install.sh | sudo sh" >&2
+        echo "    curl -fsSL https://raw.githubusercontent.com/rwx222/xks/main/install.sh | sudo sh" >&2
     else
-        echo "    wget -qO- https://xks.rwx222.com/install.sh | sudo sh" >&2
+        echo "    wget -qO- https://raw.githubusercontent.com/rwx222/xks/main/install.sh | sudo sh" >&2
     fi
 
     echo "" >&2
