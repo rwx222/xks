@@ -23,13 +23,13 @@ To install automatically, run one of the following commands:
 With **curl**:
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/rwx222/xks/main/install.sh | sh
+curl -fsSL https://xks.rwx222.com/install.sh | sh
 ```
 
 Or with **wget**:
 
 ```sh
-wget -qO- https://raw.githubusercontent.com/rwx222/xks/main/install.sh | sh
+wget -qO- https://xks.rwx222.com/install.sh | sh
 ```
 
 ---
@@ -39,11 +39,11 @@ wget -qO- https://raw.githubusercontent.com/rwx222/xks/main/install.sh | sh
 > If you get a **"No write permission"** error during installation, try adding `sudo` before `sh` (the install command):
 >
 > ```sh
-> curl -fsSL https://raw.githubusercontent.com/rwx222/xks/main/install.sh | sudo sh
+> curl -fsSL https://xks.rwx222.com/install.sh | sudo sh
 > ```
 > Or:
 > ```sh
-> wget -qO- https://raw.githubusercontent.com/rwx222/xks/main/install.sh | sudo sh
+> wget -qO- https://xks.rwx222.com/install.sh | sudo sh
 > ```
 
 ---
