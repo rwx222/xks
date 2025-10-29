@@ -12,6 +12,10 @@ modified.
 - Ensures that only default Git and SSH files are managed.
 - Lightweight, with just one external Rust dependency (`sha2`).
 
+---
+
+[![Watch video on YouTube](https://img.youtube.com/vi/oT0brln1XI0/maxresdefault.jpg)](https://www.youtube.com/watch?v=oT0brln1XI0)
+
 ## Installation
 
 You can install `xks` in three different ways:
