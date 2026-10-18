@@ -41,7 +41,9 @@ wget -qO- https://xks.rwx222.com/install.sh | sh
 > ```sh
 > curl -fsSL https://xks.rwx222.com/install.sh | sudo sh
 > ```
+>
 > Or:
+>
 > ```sh
 > wget -qO- https://xks.rwx222.com/install.sh | sudo sh
 > ```
